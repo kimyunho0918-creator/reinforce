@@ -42,7 +42,7 @@ body {
 .btn-load:hover { background: #333; border-color: var(--muted); box-shadow: none; }
 
 /* ==========================================
-    3. 메인 게임 화면 레이아웃
+    3. 메인 게임 화면 레이아웃 (새로운 순서 적용)
     ========================================== */
 .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
@@ -55,15 +55,11 @@ body {
 .btn-giveup { padding: 7px 14px; font-size: 12px; font-weight: 700; background: var(--red); color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: transform 0.1s; }
 .btn-giveup:active { transform: scale(0.95); }
 
-/* 3단 분할 그리드 */
-.main-grid { display: grid; grid-template-columns: minmax(300px, 1.2fr) 300px 320px; gap: 16px; padding: 16px; flex: 1; }
-@media (max-width: 1100px) {
-  .main-grid { grid-template-columns: 1fr 300px; }
-  .col-image { grid-column: span 2; }
-}
-@media (max-width: 768px) {
-  .main-grid { grid-template-columns: 1fr; }
-  .col-image { grid-column: 1; }
+/* 3단 분할: 상점(300px) - 중앙이미지(유연하게 팽창) - 우측상태창(320px) */
+.main-grid { display: grid; grid-template-columns: 300px minmax(350px, 1.2fr) 320px; gap: 16px; padding: 16px; flex: 1; }
+@media (max-width: 1200px) {
+  .main-grid { grid-template-columns: 300px 1fr; }
+  .col-right { grid-column: span 2; } /* 화면이 좁아지면 상태창을 밑으로 */
 }
 
 .graph-card, .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
@@ -71,9 +67,16 @@ body {
 .graph-title { font-size: 22px; font-weight: 900; color: var(--text); }
 .graph-price-info { margin-top: 6px; font-size: 16px; font-weight: 700; color: var(--green); }
 
-/* 그림 사이즈 축소 */
-.graph-container { flex: 1; border: 1px solid var(--border); border-radius: 8px; background: #151515; position: relative; padding: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden; min-height: 250px;}
-.graph-container img { max-width: 100%; max-height: 250px; object-fit: contain; filter: drop-shadow(0 15px 20px rgba(0,0,0,0.8)); transition: transform 0.3s ease; }
+/* 세로로 대폭 키운 중앙 그림 컨테이너 */
+.graph-container { 
+  flex: 1; border: 1px solid var(--border); border-radius: 8px; background: #151515; 
+  position: relative; padding: 20px; display: flex; justify-content: center; align-items: center; 
+  overflow: hidden; min-height: 500px; /* 세로 방향 확장 */
+}
+.graph-container img { 
+  max-width: 100%; max-height: 480px; /* 이미지 자체 크기 제한도 확장 */
+  object-fit: contain; filter: drop-shadow(0 15px 20px rgba(0,0,0,0.8)); transition: transform 0.3s ease; 
+}
 .graph-container:hover img { transform: scale(1.05); }
 
 .btn-enhance { width: 100%; padding: 20px; background: var(--blue); color: #121212; border: none; border-radius: 8px; font-size: 20px; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
@@ -104,7 +107,7 @@ body {
 .hv.green { color: var(--green); }
 .hv.yellow { color: #f1c40f; font-size: 18px; }
 
-.portfolio-list { margin-top: 10px; font-size: 11px; max-height: 200px; overflow-y: auto; }
+.portfolio-list { margin-top: 10px; font-size: 11px; max-height: 250px; overflow-y: auto; }
 .port-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); transition: background 0.2s; }
 .port-item:hover { background: rgba(255,255,255,0.05); padding-left: 5px; padding-right: 5px; border-radius: 4px; }
 .lb-left { display: flex; flex-direction: column; gap: 2px;}
@@ -127,19 +130,26 @@ body {
 .checkbox-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .checkbox-label.disabled { opacity: 0.3; pointer-events: none; }
 
+/* 🎯 3색 타이밍 컨테이너 (빨강 배경) */
 .timing-container {
-  width: 100%; height: 28px; background: #0a0a0a; border: 1px solid var(--border); 
-  border-radius: 14px; position: relative; margin-bottom: 15px; overflow: hidden;
+  width: 100%; height: 28px; background: rgba(250, 82, 82, 0.4); /* 기본 배경이 빨강(즉시파괴) */
+  border: 1px solid var(--border); border-radius: 14px; position: relative; margin-bottom: 15px; overflow: hidden;
 }
-/* 하드코어 난이도: 타겟 영역을 폭 10%로 줄임 */
-.timing-target {
-  position: absolute; top: 0; left: 45%; width: 10%; height: 100%; 
-  background: rgba(64, 192, 87, 0.4); border-left: 2px solid var(--green); border-right: 2px solid var(--green);
+/* 노란색 구간 (30% ~ 70%) */
+.timing-zone-yellow {
+  position: absolute; top: 0; left: 30%; width: 40%; height: 100%; 
+  background: rgba(241, 196, 15, 0.4); border-left: 2px solid #f1c40f; border-right: 2px solid #f1c40f;
+}
+/* 초록색 구간 (46% ~ 54%) */
+.timing-zone-green {
+  position: absolute; top: 0; left: 46%; width: 8%; height: 100%; 
+  background: rgba(64, 192, 87, 0.9);
 }
 .timing-cursor {
   position: absolute; top: 0; left: 0%; width: 4px; height: 100%; 
   background: #fff; box-shadow: 0 0 10px #fff; transform: translateX(-50%); z-index: 2;
 }
+
 #timing-feedback { text-align: center; font-size: 14px; font-weight: 900; height: 20px; margin-bottom: 10px; color: var(--text); }
 
 .panel-header { display: flex; align-items: center; justify-content: center; background: var(--red-light); padding-top: 30px; padding-bottom: 20px; border-radius: 16px 16px 0 0; margin-bottom: 20px;}
