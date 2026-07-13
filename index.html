@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학교 건물 강화하기 (Hardcore Edition)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="lobby-view" class="screen active">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="logo-icon">🏫</div>
+      <h1>학교 강화하기 <span style="color:var(--red); font-size:16px;">[HARDCORE]</span></h1>
+      <p style="color:var(--muted); font-size:12px; margin-top:8px;">극악의 난이도! 최고의 학교를 건설하라!</p>
+    </div>
+
+    <div class="login-card">
+      <h2>📋 학생 정보 입력</h2>
+      <div class="field-group">
+        <label>학번</label>
+        <input type="number" id="player-id-input" placeholder="예: 20261234">
+      </div>
+      <div class="field-group">
+        <label>이름</label>
+        <input type="text" id="player-name-input" placeholder="예: 홍길동">
+      </div>
+
+      <button id="start-game-btn" class="btn-start">▶ 게임 시작</button>
+      <button id="load-game-btn" class="btn-start btn-load" style="display: none;">💾 이어하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="main-game-view" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">🏫 학교 강화 <span style="color:var(--red);">HARDCORE</span></div>
+      <div class="topbar-user">
+        <span id="disp-id">-</span> | <span id="disp-name">-</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="turn-badge" id="save-badge">저장 완료 ✔️</div>
+      <button class="btn-giveup" id="end-game-btn">🏁 포기 및 랭킹등록</button>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="col-image">
+      <div class="graph-card">
+        <div class="graph-header">
+          <div>
+            <div class="graph-title" id="school-level-name">+0 빈 공터</div>
+            <div class="graph-price-info" id="school-probability">기본 성공률 100%</div>
+          </div>
+        </div>
+        <div class="graph-container">
+          <img id="school-image" src="" alt="학교 이미지" onerror="this.src='https://via.placeholder.com/300x250/1e1e1e/868e96?text=No+Image';">
+        </div>
+        <button id="open-enhance-btn" class="btn-enhance" style="margin-top: 20px;">건물 강화하기 (팝업)</button>
+      </div>
+    </div>
+
+    <div class="col-shop">
+      <div class="info-card" style="height: 100%;">
+        <div class="section-title yellow">🏪 블랙 마켓</div>
+        <div class="shop-desc">아이템을 구매하여 극악의 확률을 뚫으세요!</div>
+        
+        <div class="shop-item">
+          <div class="shop-item-info">
+            <span class="s-name">일반 파괴 방지권</span>
+            <span class="s-desc">강화 실패 시 파괴를 막아줍니다.<br>(~15강까지만 사용 가능)</span>
+          </div>
+          <button class="btn-buy" onclick="buyItem('basicProtect')">1,000,000원</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+            <span class="s-name" style="color:#d87093;">고급 파괴 방지권</span>
+            <span class="s-desc">16강 이상에서 파괴를 막아주는 귀한 부적.</span>
+          </div>
+          <button class="btn-buy" onclick="buyItem('advProtect')">20,000,000원</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="shop-item-info">
+            <span class="s-name" style="color:var(--green);">확률 증폭 칩</span>
+            <span class="s-desc">성공 확률을 올려줍니다.<br>(고강일수록 효율 급감)</span>
+          </div>
+          <button class="btn-buy" onclick="buyItem('probBuff')">500,000원</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="info-card">
+        <div class="section-title">📊 현재 상태</div>
+        <div class="holding-row"><div class="hl">💰 보유 예산</div><div class="hv green" id="budget">0원</div></div>
+        <div class="holding-row"><div class="hl">🏆 최고 기록</div><div class="hv yellow" id="max-level-display">0강</div></div>
+        <div class="holding-row" style="margin-top: 8px;"><div class="hl">🔻 다음 강화 비용</div><div class="hv red" id="cost">0원</div></div>
+        <div class="holding-row"><div class="hl">💵 현재 매각 가격</div><div class="hv" id="school-value">0원</div></div>
+      </div>
+
+      <div class="info-card">
+        <div class="section-title">🎒 내 인벤토리</div>
+        <div class="holding-row"><div class="hl">일반 파괴 방지권</div><div class="hv" id="inv-basic">0개</div></div>
+        <div class="holding-row"><div class="hl" style="color:#d87093;">고급 파괴 방지권</div><div class="hv" id="inv-adv">0개</div></div>
+        <div class="holding-row"><div class="hl" style="color:var(--green);">확률 증폭 칩</div><div class="hv" id="inv-buff">0개</div></div>
+      </div>
+
+      <div class="info-card" style="flex:1;">
+        <div class="section-title yellow">🏆 명예의 전당 (Top 15)</div>
+        <div class="portfolio-list" id="leaderboard-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="timing-modal" class="overlay">
+  <div class="panel timing-panel">
+    <h2 style="color:var(--text); margin-bottom:10px;">🔨 건물 강화 <span id="tm-level-info" style="color:var(--blue);"></span></h2>
+    <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">강화 비용: <span id="tm-cost" style="color:var(--red); font-weight:bold;"></span></p>
+    
+    <div class="item-options">
+      <label class="checkbox-label" id="label-basic-protect">
+        <input type="checkbox" id="use-basic-protect"> 일반 방지권 사용 (보유: <span id="tm-inv-basic">0</span>)
+      </label>
+      <label class="checkbox-label" id="label-adv-protect">
+        <input type="checkbox" id="use-adv-protect"> 고급 방지권 사용 (보유: <span id="tm-inv-adv">0</span>)
+      </label>
+      <label class="checkbox-label" id="label-prob-buff">
+        <input type="checkbox" id="use-prob-buff"> 확률 칩 사용 (+<span id="tm-buff-amt">0</span>%p) (보유: <span id="tm-inv-buff">0</span>)
+      </label>
+    </div>
+
+    <div id="timing-feedback">게이지가 초록색일 때 누르세요!</div>
+    <div class="timing-container">
+      <div class="timing-target" id="timing-target"></div>
+      <div class="timing-cursor" id="timing-cursor"></div>
+    </div>
+    
+    <button id="tm-hit-btn" class="btn-start" style="margin-top:20px; font-size:18px;">강화 시도 (Spacebar)</button>
+    <button id="tm-cancel-btn" class="btn-start btn-load" style="margin-top:5px;">취소</button>
+  </div>
+</div>
+
+<div id="failure-overlay" class="overlay">
+  <div class="panel">
+    <div class="panel-header" style="background:var(--red-light);">
+      <h2 style="color:var(--red);">💥 붕괴되었습니다</h2>
+    </div>
+    <div class="end-stats">
+      <div class="end-message" style="font-size:16px;">강화에 실패하여 학교가 잿더미가 되었습니다.<br>예산과 기록이 초기화됩니다.</div>
+      <button id="retry-btn" class="btn-start" style="margin-top:10px;">처음부터 다시 시작</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
