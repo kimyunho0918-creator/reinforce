@@ -49,21 +49,7 @@
   </div>
 
   <div class="main-grid">
-    <div class="col-image">
-      <div class="graph-card">
-        <div class="graph-header">
-          <div>
-            <div class="graph-title" id="school-level-name">+0 빈 공터</div>
-            <div class="graph-price-info" id="school-probability">기본 성공률 100%</div>
-          </div>
-        </div>
-        <div class="graph-container">
-          <img id="school-image" src="" alt="학교 이미지" onerror="this.src='https://via.placeholder.com/300x250/1e1e1e/868e96?text=No+Image';">
-        </div>
-        <button id="open-enhance-btn" class="btn-enhance" style="margin-top: 20px;">건물 강화하기 (팝업)</button>
-      </div>
-    </div>
-
+    
     <div class="col-shop">
       <div class="info-card" style="height: 100%;">
         <div class="section-title yellow">🏪 블랙 마켓</div>
@@ -95,6 +81,21 @@
       </div>
     </div>
 
+    <div class="col-image">
+      <div class="graph-card">
+        <div class="graph-header">
+          <div>
+            <div class="graph-title" id="school-level-name">+0 빈 공터</div>
+            <div class="graph-price-info" id="school-probability">기본 성공률 100%</div>
+          </div>
+        </div>
+        <div class="graph-container">
+          <img id="school-image" src="" alt="학교 이미지" onerror="this.src='https://via.placeholder.com/300x400/1e1e1e/868e96?text=No+Image';">
+        </div>
+        <button id="open-enhance-btn" class="btn-enhance" style="margin-top: 20px;">건물 강화하기 (팝업)</button>
+      </div>
+    </div>
+
     <div class="col-right">
       <div class="info-card">
         <div class="section-title">📊 현재 상태</div>
@@ -116,6 +117,7 @@
         <div class="portfolio-list" id="leaderboard-list"></div>
       </div>
     </div>
+    
   </div>
 </div>
 
@@ -136,9 +138,10 @@
       </label>
     </div>
 
-    <div id="timing-feedback">게이지가 초록색일 때 누르세요!</div>
+    <div id="timing-feedback">초록(확률업) / 노랑(기본) / 빨강(즉시파괴)</div>
     <div class="timing-container">
-      <div class="timing-target" id="timing-target"></div>
+      <div class="timing-zone-yellow"></div>
+      <div class="timing-zone-green"></div>
       <div class="timing-cursor" id="timing-cursor"></div>
     </div>
     
