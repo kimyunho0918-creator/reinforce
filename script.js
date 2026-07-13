@@ -52,7 +52,7 @@ function startTimingGame() {
   isAnimating = true;
   timingPosition = 0;
   
-  // 속도: 레벨이 오를수록 게이지가 미친듯이 빨라짐 (하드코어)
+  // 속도: 레벨이 오를수록 게이지가 미친듯이 빨라짐
   timingSpeed = 2.5 + (currentLevel * 0.5);
 
   function animate() {
@@ -71,10 +71,10 @@ function stopTimingGame() {
   cancelAnimationFrame(animationFrameId);
 }
 
-// 스페이스바 이벤트 (모달이 열려있을 때만)
+// 스페이스바 이벤트 (모달이 열려있을 때만 작동)
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && isTimingModalOpen && !tmHitBtn.disabled) {
-    e.preventDefault(); // 스크롤 방지
+    e.preventDefault();
     tmHitBtn.click();
   }
 });
@@ -154,7 +154,7 @@ window.buyItem = function(itemType) {
 };
 
 // ===================================
-// 강화 모달 (기믹) 로직
+// 강화 모달 (빨/노/초 기믹) 로직
 // ===================================
 openEnhanceBtn.addEventListener('click', () => {
   if (currentLevel >= 20) return;
@@ -162,11 +162,9 @@ openEnhanceBtn.addEventListener('click', () => {
     alert("강화 예산이 부족합니다!"); return;
   }
 
-  // 모달 텍스트 세팅
   document.getElementById('tm-level-info').textContent = `+${currentLevel} ➡ +${currentLevel + 1}`;
   document.getElementById('tm-cost').textContent = enhancementCosts[currentLevel].toLocaleString() + "원";
   
-  // 체크박스 세팅 및 제한 로직
   const chkBasic = document.getElementById('use-basic-protect');
   const chkAdv = document.getElementById('use-adv-protect');
   const chkBuff = document.getElementById('use-prob-buff');
@@ -177,7 +175,6 @@ openEnhanceBtn.addEventListener('click', () => {
   document.getElementById('tm-inv-adv').textContent = inventory.advProtect;
   document.getElementById('tm-inv-buff').textContent = inventory.probBuff;
 
-  // 15강 이하: 일반 허용, 16강 이상: 고급 허용
   if (currentLevel <= 15) {
     document.getElementById('label-basic-protect').classList.remove('disabled');
     document.getElementById('label-adv-protect').classList.add('disabled');
@@ -188,7 +185,6 @@ openEnhanceBtn.addEventListener('click', () => {
     if(inventory.advProtect <= 0) document.getElementById('label-adv-protect').classList.add('disabled');
   }
   
-  // 버프 효율: 기본 15% 제공이나 강 수가 높을수록 극감 ( 15 * (1 - 레벨/20) )
   if(inventory.probBuff <= 0) {
     document.getElementById('label-prob-buff').classList.add('disabled');
   } else {
@@ -198,11 +194,10 @@ openEnhanceBtn.addEventListener('click', () => {
   const buffBonus = 15 * (1 - (currentLevel / 20));
   document.getElementById('tm-buff-amt').textContent = buffBonus.toFixed(1);
 
-  // 모달 오픈
   timingModal.classList.add('open');
   isTimingModalOpen = true;
   tmHitBtn.disabled = false;
-  feedbackEl.textContent = "게이지가 초록색일 때 누르세요! (Spacebar)";
+  feedbackEl.textContent = "초록(확률업) / 노랑(기본) / 빨강(즉시파괴)";
   feedbackEl.style.color = "var(--text)";
   
   startTimingGame();
@@ -216,7 +211,7 @@ tmCancelBtn.addEventListener('click', () => {
 
 tmHitBtn.addEventListener('click', () => {
   stopTimingGame();
-  tmHitBtn.disabled = true; // 연타 방지
+  tmHitBtn.disabled = true; 
   
   schoolBudget -= enhancementCosts[currentLevel];
   
@@ -230,35 +225,34 @@ tmHitBtn.addEventListener('click', () => {
   
   let finalProbability = successRates[currentLevel];
   
-  // 버프 아이템 사용 처리
   if (chkBuff && inventory.probBuff > 0) {
     inventory.probBuff--;
     const buffBonus = 0.15 * (1 - (currentLevel / 20));
     finalProbability += buffBonus;
   }
   
-  // 타이밍 타겟 구역 (left 45%, width 10% -> 45~55 구간) - 하드코어
-  const targetStart = 45;
-  const targetEnd = 55;
-  
-  if (timingPosition >= targetStart && timingPosition <= targetEnd) {
-    finalProbability += 0.10; // 퍼펙트 보너스 10%
-    feedbackEl.innerHTML = `<span style="color:var(--green)">PERFECT! 확률 대폭 증가!</span>`;
+  // 🎯 3색 영역 판정
+  // 초록: 46% ~ 54% | 노랑: 30% ~ 70% | 빨강: 나머지 전부
+  if (timingPosition >= 46 && timingPosition <= 54) {
+    finalProbability += 0.10; // 초록색 명중: 확률 보너스
+    feedbackEl.innerHTML = `<span style="color:var(--green)">PERFECT! 초록색 명중! (확률 증가)</span>`;
+  } else if (timingPosition >= 30 && timingPosition <= 70) {
+    // 노란색 명중: 기본 확률 유지
+    feedbackEl.innerHTML = `<span style="color:#f1c40f">GOOD! 노란색 명중! (기본 확률)</span>`;
   } else {
-    finalProbability *= 0.5; // 빗맞출 시 확률 반토막
-    feedbackEl.innerHTML = `<span style="color:var(--red)">MISS! 확률 절반으로 감소!</span>`;
+    finalProbability = 0; // 빨간색 명중: 즉시 실패 확정
+    feedbackEl.innerHTML = `<span style="color:var(--red)">MISS! 빨간색 명중! (즉시 실패)</span>`;
   }
 
   setTimeout(() => {
     timingModal.classList.remove('open');
     isTimingModalOpen = false;
 
+    // 만약 빨간색에 맞아 finalProbability가 0이 되었다면 무조건 else 구문(실패)으로 감
     if (Math.random() < finalProbability) {
-      // 성공
       currentLevel++;
       updateDisplay();
     } else { 
-      // 실패
       if (protectUsed) {
         alert("💥 강화 실패! 하지만 파괴 방지권이 학교를 지켰습니다.");
         updateDisplay();
@@ -267,7 +261,7 @@ tmHitBtn.addEventListener('click', () => {
         failureOverlay.classList.add('open');
       }
     }
-  }, 1000); // 1초 대기 후 결과 판정
+  }, 1000);
 });
 
 // ===================================
@@ -322,7 +316,6 @@ function performEndGame() {
   document.getElementById('player-name-input').value = '';
 }
 
-// 이벤트
 startGameBtn.addEventListener('click', () => {
   const idVal = document.getElementById('player-id-input').value.trim();
   const nameVal = document.getElementById('player-name-input').value.trim();
@@ -330,7 +323,6 @@ startGameBtn.addEventListener('click', () => {
   
   currentPlayerId = idVal; currentPlayerName = nameVal;
   
-  // 하드코어 난이도 초기 예산 (2000만 원)
   currentLevel = 0; maxLevelAchieved = 0; schoolBudget = 20000000; 
   inventory = { basicProtect: 0, advProtect: 0, probBuff: 0 };
   gameStarted = true;
@@ -361,7 +353,6 @@ endGameBtn.addEventListener('click', () => {
   if(confirm("정말 게임을 포기하고 현재 상태를 랭킹에 등록하시겠습니까?")) performEndGame();
 });
 
-// 초기화
 if (localStorage.getItem('schoolGameSaveHC')) loadGameBtn.style.display = 'block';
 renderLeaderboard();
 showView('lobby-view');
